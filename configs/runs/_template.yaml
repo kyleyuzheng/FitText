@@ -1,0 +1,71 @@
+# Run config template — copy and fill per experiment cell.
+# Uncommented fields are REQUIRED. Commented fields show available overrides.
+#
+# INHERITANCE: list _base YAMLs to merge from. Keys in THIS file override _base.
+# Order matters: later entries override earlier ones.
+inherit:
+  - configs/_base/benchmarks.yaml
+  - configs/_base/embedder.yaml
+  - configs/_base/evaluators.yaml
+  - configs/_base/infra.yaml
+
+# ── Model ──────────────────────────────────────────────────────────────────
+# Use pin aliases from configs/model_pins.yaml. Do not duplicate model IDs here.
+model:
+  pin: agents.legacy_baseline
+  revision: null                       # optional; HF revision for local models
+  max_tokens: 2048
+  temperature: 0.0
+  seed: 42
+
+# ── FitText hyperparameters ────────────────────────────────────────────────
+fittext:
+  variant: "memetic"                   # single_pass | multi_turn | scattershot | memetic
+  population_size: 5                   # N — p5_g3 winning setting
+  generations: 3                       # G — p5_g3 winning setting
+  mutation_prob: 0.5
+  crossover_prob: 0.5
+  memory_penalty: 0.5                  # λ in Eq. 7
+  fitness_alpha: 0.7                   # α in Eq. 7 (top-1 weight; top-3 weight = 1-α)
+  jaccard_threshold: 0.3               # τ in Eq. 7
+  selection: "fitness"                 # fitness | random | none
+  top_k_retrieval: 5
+
+# ── Benchmark ──────────────────────────────────────────────────────────────
+benchmark:
+  name: "toolret"                      # toolret | stabletoolbench
+  splits:
+    - "code"
+    - "customized"
+    - "web"
+    - "toolbench"
+  n_queries_per_split: null            # null = all queries
+
+# ── Evaluator (inherited from _base/evaluators.yaml; override only if testing) ──
+# evaluator:
+#   judge_model: ...
+#   judge_revision: ...
+#   simulator_model: ...
+#   simulator_revision: ...
+
+# ── Embedder (inherited from _base/embedder.yaml; must stay pinned) ────────
+# embedder:
+#   name: ...
+#   revision: ...
+#   device: cuda:0
+
+# ── Infrastructure (inherited from _base/infra.yaml) ─────────────────────
+# infra:
+#   cache_dir: ...
+#   output_dir: ...
+#   rsync_to: ...
+#   shard: 0
+#   total_shards: 1
+
+# ── Budget circuit-breaker ─────────────────────────────────────────────────
+budget:
+  max_cost_usd: 50.0     # per §5.2 default per-cell cap
+
+# ── Extra / pass-through ──────────────────────────────────────────────────
+# extra:
+#   note: "optional freeform annotations; not part of config_hash"

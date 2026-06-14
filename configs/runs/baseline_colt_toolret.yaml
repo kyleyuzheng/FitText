@@ -1,0 +1,60 @@
+# COLT baseline on ToolRet benchmark.
+# Wraps quchangle1/COLT (dual-encoder + dual-view GCN).
+# Requires: export COLT_PATH=<cloned repo>; export COLT_CKPT=<checkpoint>
+# Setup:   bash scripts/setup_colt.sh
+#
+# Relation to FitText: orthogonal (cuts R — retriever topology via GCN,
+# not B — belief-space evolution). COLT is the only public-repo orthogonal
+# baseline, so we wrap rather than cite-only.
+#
+# No LLM calls at inference — model_client is constructed but not used.
+# Budget is low accordingly.
+inherit:
+  - configs/_base/benchmarks.yaml
+  - configs/_base/embedder.yaml
+  - configs/_base/evaluators.yaml
+  - configs/_base/infra.yaml
+
+model:
+  # Model name required by schema; not used at COLT inference time.
+  pin: agents.legacy_baseline
+  revision: null
+  max_tokens: 2048
+  temperature: 0.0
+  seed: 42
+
+fittext:
+  variant: "single_pass"   # schema placeholder; COLT is dispatched via run_baseline.py
+  population_size: 1
+  generations: 1
+  mutation_prob: 0.0
+  crossover_prob: 0.0
+  memory_penalty: 0.0
+  fitness_alpha: 0.7
+  jaccard_threshold: 0.3
+  selection: "none"
+  top_k_retrieval: 5
+
+benchmark:
+  name: "toolret"
+  splits:
+    - "code"
+    - "customized"
+    - "web"
+    - "toolbench"
+  n_queries_per_split: null
+
+budget:
+  max_cost_usd: 2.0    # no LLM calls; any cost is accidental
+
+extra:
+  baseline_name: "colt"
+  paper: "Quchangle et al. — github.com/quchangle1/COLT"
+  # COLT-specific hparams (read by COLTBaseline from cfg.extra)
+  colt_batch_size: 64
+  colt_device: "cpu"               # override with "cuda:0" on GPU host
+  colt_entry_script: "retrieve_tools.py"
+  colt_timeout_seconds: 300
+  note: >
+    Dual-encoder + dual-view GCN baseline. Requires COLT_PATH and COLT_CKPT
+    env vars. No LLM inference; subprocess-calls COLT upstream.

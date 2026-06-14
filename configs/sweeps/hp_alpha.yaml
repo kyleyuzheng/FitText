@@ -1,0 +1,32 @@
+# Hyperparameter robustness sweep — Eq. 7 parameters (§2.1).
+# Base: GPT-4.1-mini Memetic ToolRet (legacy comparison baseline; superseded
+# configs/model_pins.yaml main_solver. This sweep stays on the legacy 4.1-mini
+# base for comparability with the original ablation.)
+# Goal: show no pathological tuning. Report Avg. Rank; confirm ±1 rank within ±10% perturbation.
+#
+# This sweep covers all 6 Eq. 7 parameters in one_at_a_time mode.
+# Total cells: 3 + 4 + 4 + 4 + 3 + 3 = 21 cells × 4 ToolRet domains = 84 runs.
+# Add ToolBench split for completeness → ~100 ablation runs (§2.1).
+
+inherit_from: "configs/runs/reproduce_paper.yaml"
+
+sweep:
+  - field: "fittext.fitness_alpha"
+    values: [0.5, 0.7, 0.9]     # α ∈ {0.5/0.5, 0.7/0.3 [paper], 0.9/0.1}
+
+  - field: "fittext.jaccard_threshold"
+    values: [0.2, 0.3, 0.4, 0.5]  # τ; paper = 0.3
+
+  - field: "fittext.memory_penalty"
+    values: [0.3, 0.5, 0.7, 1.0]  # λ; paper = 0.5
+
+  - field: "fittext.population_size"
+    values: [4, 6, 8, 10]          # N; paper = 6
+
+  - field: "fittext.generations"
+    values: [2, 3, 4]              # G; paper = 3
+
+  - field: "fittext.top_k_retrieval"
+    values: [3, 5, 10]             # top-k; paper = 5
+
+mode: "one_at_a_time"

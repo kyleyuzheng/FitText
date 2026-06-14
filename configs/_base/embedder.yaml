@@ -1,0 +1,13 @@
+# Pinned retrieval embedder — must NOT change between runs or ablations.
+# The embedder must be identical across all runs so retrieval quality is
+# never a confound between cells.
+#
+# Source of truth: configs/model_pins.yaml — embedders.toolret.
+# revision="" intentional: HF hub does not version this model by commit in normal usage;
+# reproducibility is ensured by the model name pin + local cache at $HF_HOME.
+# To fully lock: set revision to the HF commit hash of your cached copy.
+
+embedder:
+  pin: embedders.toolret
+  revision: ""   # set to HF commit hash to fully lock; empty = use latest cached
+  device: "cuda:0"

@@ -1,0 +1,48 @@
+# Reproduction run — GPT-4.1-mini Memetic on ToolRet (all 4 domains).
+# Purpose: validate new infra against submitted paper numbers (Day 3 per §6.6).
+# Expected output: NDCG@5, P@5, R@5, Comprehensiveness@5 matching paper Table N.
+#
+# This is the CANONICAL baseline. Any infra change that shifts these numbers
+# without a scientific reason is a bug, not a result.
+
+inherit:
+  - configs/_base/benchmarks.yaml
+  - configs/_base/embedder.yaml
+  - configs/_base/evaluators.yaml
+  - configs/_base/infra.yaml
+
+model:
+  pin: agents.legacy_baseline
+  revision: null
+  max_tokens: 2048
+  temperature: 1.0                # DFSDT trigger / outer loop
+  evolution_temperature: 1.5      # memetic subprocess (seed/mutation/crossover/refine) — rescue T for hard queries
+  seed: 42
+
+fittext:
+  variant: "memetic"              # uses p5_g3 memetic setting
+  population_size: 5              # p5_g3 — winning configuration
+  generations: 3
+  mutation_prob: 0.5
+  crossover_prob: 0.5
+  memory_penalty: 0.5
+  fitness_alpha: 0.7
+  jaccard_threshold: 0.3
+  selection: "fitness"
+  top_k_retrieval: 5
+
+benchmark:
+  name: "toolret"
+  splits:
+    - "code"
+    - "customized"
+    - "web"
+    - "toolbench"
+  n_queries_per_split: null
+
+budget:
+  max_cost_usd: 50.0
+
+extra:
+  note: "Paper reproduction — GPT-4.1-mini Memetic ToolRet. Reference run for infra validation."
+  paper_submission: "preprint"

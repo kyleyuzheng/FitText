@@ -1,0 +1,47 @@
+# GPT-4.1-mini Memetic on StableToolBench G1+G2+G3 — legacy
+# baseline run config (reference/comparison only, never the headline).
+# Superseded as the main solver 2026-05-31; the main solver is now
+# This file is intentionally pinned to the legacy 4.1-mini model
+# (filename gpt41mini_*) to reproduce the legacy comparison rows. KEEP the
+# model value below.
+
+inherit:
+  - configs/_base/benchmarks.yaml
+  - configs/_base/embedder.yaml
+  - configs/_base/evaluators.yaml
+  - configs/_base/infra.yaml
+
+model:
+  pin: agents.legacy_baseline
+  revision: null
+  max_tokens: 2048
+  temperature: 1.0                # DFSDT trigger / outer loop
+  evolution_temperature: 1.5      # memetic subprocess (seed/mutation/crossover/refine) — rescue T for hard queries
+  seed: 42
+
+fittext:
+  variant: "memetic"              # uses p5_g3 memetic setting
+  population_size: 5              # p5_g3 — winning configuration
+  generations: 3
+  mutation_prob: 0.5
+  crossover_prob: 0.5
+  memory_penalty: 0.5
+  fitness_alpha: 0.7
+  jaccard_threshold: 0.3
+  selection: "fitness"
+  top_k_retrieval: 5
+
+benchmark:
+  name: "stabletoolbench"
+  splits:
+    - "G1"
+    - "G2"
+    - "G3"
+  n_queries_per_split: null
+
+budget:
+  max_cost_usd: 50.0
+
+extra:
+  note: "Legacy comparison model — GPT-4.1-mini Memetic STB."
+  run_count: 2

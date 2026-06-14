@@ -1,0 +1,42 @@
+#   https://developers.openai.com/api/docs/pricing
+# cheap-SOTA agent for small-scale sweep — dbd (discriminator-by-design) on STB G2+G3.
+
+inherit:
+  - configs/_base/benchmarks.yaml
+  - configs/_base/embedder.yaml
+  - configs/_base/evaluators.yaml
+  - configs/_base/infra.yaml
+
+model:
+  pin: agents.main_solver
+  revision: null
+  max_tokens: 2048
+  temperature: 1.5                # diversity for multi-turn refinement (split-temperatures directive)
+  seed: 42
+
+fittext:
+  variant: "multi_turn"           # dbd is implemented as multi_turn refinement
+  population_size: 1
+  generations: 3
+  mutation_prob: 0.0
+  crossover_prob: 0.0
+  memory_penalty: 0.0
+  fitness_alpha: 0.7
+  jaccard_threshold: 0.3
+  selection: "fitness"
+  top_k_retrieval: 5
+
+benchmark:
+  name: "stabletoolbench"
+  splits:
+    - "G2"
+    - "G3"
+  n_queries_per_split: 50
+
+budget:
+  max_cost_usd: 15.0
+
+extra:
+  note: "cheap-SOTA dbd (discriminator-by-design / multi_turn) on STB G2+G3. 3 revision rounds."
+  cheap_sota_track: true
+  technique_alias: "dbd"

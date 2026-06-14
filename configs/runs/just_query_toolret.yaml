@@ -1,0 +1,57 @@
+# Just-Query — zero-retrieval floor baseline on ToolRet (all 4 splits).
+#
+# Zero-retrieval floor: this is the "everything off" comparator. The agent
+# receives the query text only — NO retrieval, NO tool catalog, NO second
+# pass. It must answer from prior knowledge alone. Every retrieval method
+# above it (single_pass, multi_turn, scattershot, memetic) is judged against
+# this floor.
+#
+# Schema: variant="just_query" — population_size/generations/etc. are forced
+# to 1/none because no evolutionary search is happening.
+
+inherit:
+  - configs/_base/benchmarks.yaml
+  - configs/_base/embedder.yaml
+  - configs/_base/evaluators.yaml
+  - configs/_base/infra.yaml
+
+model:
+  pin: agents.legacy_baseline
+  revision: null
+  max_tokens: 2048
+  temperature: 0.0
+  seed: 42
+
+fittext:
+  variant: "just_query"
+  population_size: 1
+  generations: 1
+  mutation_prob: 0.0
+  crossover_prob: 0.0
+  memory_penalty: 0.0
+  fitness_alpha: 0.7    # unused — kept for hash determinism vs single_pass diff
+  jaccard_threshold: 0.3
+  selection: "none"
+  top_k_retrieval: 0    # zero-retrieval — no tools are returned
+
+benchmark:
+  name: "toolret"
+  splits:
+    - "code"
+    - "customized"
+    - "web"
+    - "toolbench"
+  n_queries_per_split: null
+
+budget:
+  # Cheap: 1 LLM call per query, no tool catalog in prompt.
+  max_cost_usd: 10.0
+
+extra:
+  technique_name: "just_query"
+  technique_role: "zero_retrieval_floor"
+  note: |
+    Zero-retrieval floor baseline. Bounds the value contributed by every
+    retrieval method above it. One LLM call per query; no tool catalog,
+    no retriever, no critic. metadata.answer carries the direct LLM
+    response for downstream judging.

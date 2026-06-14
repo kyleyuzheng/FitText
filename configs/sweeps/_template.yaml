@@ -1,0 +1,23 @@
+# Sweep config template — fan out a base run config over parameter grids.
+#
+# SCHEMA:
+#   inherit_from: path to a base run YAML (resolved before sweep expansion)
+#   sweep:
+#     - field: dotted field path into RunConfig (e.g. "fittext.fitness_alpha")
+#       values: list of values to try
+#   mode: "one_at_a_time" (default) | "cartesian"
+#     - one_at_a_time: vary one field at a time, all others at base value
+#       → total cells = sum(len(v) for each param)
+#     - cartesian: all combinations
+#       → total cells = product(len(v) for each param)
+#
+# OUTPUT: scripts/expand_sweep.py writes per-cell YAMLs under
+#   ${FITTEXT_RUNTIME_ROOT:-runs}/generated_configs/
+
+inherit_from: "configs/runs/reproduce_paper.yaml"
+
+sweep:
+  - field: "fittext.fitness_alpha"
+    values: [0.5, 0.7, 0.9]
+
+mode: "one_at_a_time"

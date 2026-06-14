@@ -1,0 +1,118 @@
+<function>
+<name>check_answer_status</name>
+<description>
+Given the query and answer only, return `answer_status` (Solved / Unsolved / Unsure).
+
+This is a conservative fallback used when execution details are not inspected.
+Do not give credit for confident wording alone.
+
+Return "Unsolved" if the answer has any of these defects:
+1. It refuses, asks the user for missing information, says it cannot access the needed resource, or only says what it would do next.
+2. It claims success, retrieval, generation, file creation, downloading, uploading, ranking, or analysis but does not provide the concrete requested payload: values, names, IDs, URLs, file links, numbers, or records.
+3. It recommends an outside API, website, library, or manual workflow instead of returning the requested result.
+4. It gives generic filler, a template, an example, a placeholder, or a plausible-looking answer that does not actually answer the query.
+
+Return "Solved" only when the answer itself contains the concrete requested information and there is no visible sign of refusal, placeholder content, or unsupported success claims.
+
+Return "Unsure" when the answer is concrete but its correctness depends on tool evidence that is not visible in this final-answer-only view.
+
+Query:
+{query}
+Answer:
+{answer}
+
+Now return your reason in "content" and `answer_status` in JSON to `check_answer_status`.
+</description>
+</function>
+
+<function>
+<name>parse_answer_status</name>
+<description>
+Given the query and full execution detail of an answer, return `answer_status`.
+
+Important StableToolBench boundary:
+- Virtual-server or simulator observations are normal benchmark behavior.
+- A simulated observation is valid evidence only for the concrete content it actually returned.
+- Do not penalize an answer merely because an observation came from a simulator.
+- Do penalize an answer if the final answer invents facts, links, files, artifacts, scores, successful outcomes, or completed work not supported by the observed tool messages.
+- The `available_tools` list and tool descriptions are capabilities, not evidence. A tool being available, relevant, or well-named does not prove the task was completed.
+
+Use this support check:
+1. Identify the exact deliverable requested by the query.
+2. Identify every material claim in `final_answer`: specific names, IDs, URLs, dates, numbers, rankings, generated artifacts, files, images, downloads, analyses, or claims that a task was completed.
+3. For each material claim, find concrete support in prior tool observations inside `answer_details`. Do not count `available_tools`, tool names, API descriptions, planned calls, or generic descriptions as support.
+4. Mark "Solved" only if at least one relevant tool call succeeded, the observations contain the needed payload, and the final answer faithfully reports that payload.
+
+Missing-input rule:
+- Some defaults are harmless technical knobs: page size, result count, sort order, output format, locale when the query allows it, or a date/window when the task is explicitly open-ended and the answer clearly states the assumption.
+- Material inputs define the user's actual target or requested artifact. These include destination URLs to shorten, website URLs to analyze, guest names, account IDs, order IDs, file IDs, tracking numbers, phone numbers, email addresses, campaign IDs, pass IDs, exact locations, exact products, or the content that should be encoded/generated.
+- If a material input is missing, the agent may explain the missing information or provide a clearly labeled example. It must NOT invent a concrete value, call an API with that value, and then claim the user's real task was completed.
+- If the query explicitly asks for examples, demos, or reasonable sample data, invented sample inputs can be acceptable only if the final answer clearly labels them as samples and does not claim real user-specific completion.
+
+Return "Unsolved" if ANY of these failure modes appear:
+1. All relevant tool calls failed, errored, were unauthorized, returned no useful data, or returned only generic "success" without the requested payload.
+2. The final answer contains values, names, URLs, file paths, artifact links, rankings, or conclusions that do not appear in the tool observations.
+3. The final answer says it created, generated, downloaded, uploaded, saved, or retrieved an artifact, but the trajectory does not contain the actual artifact URL/path/content from a tool response.
+4. The trajectory uses placeholder, example, dummy, or schema-like responses as if they were real results.
+5. The model supplies a missing material input itself, then treats the resulting tool or simulated output as answering the user's original query.
+6. The final answer converts an error, no-data response, irrelevant side result, or partial branch into a confident successful answer.
+7. The final answer recommends a third-party endpoint, website, or library instead of returning the requested result.
+8. The final answer is only a plan, refusal, caveat, or request for more input.
+
+Return "Unsure" only for genuinely partial evidence where the trajectory contains some relevant payload but it is not enough to decide correctness.
+
+Do not reward fluency. If the evidence is weak, generic, missing, or contradicted, return "Unsolved" even when the final answer sounds confident.
+
+Query:
+{query}
+Answer:
+{answer}
+
+Now return reason in "content" and `answer_status` in JSON to `parse_answer_status`.
+</description>
+</function>
+
+<function>
+<name>check_task_solvable</name>
+<description>
+Please check whether the given task solvable with following rules:
+1. If the `query` provide invalid information (e.g. invalid email address or phone number), return "Unsolvable"
+2. If the `query` needs more information to solve (e.g. the target restaurant name in a navigation task), return "Unsolvable"
+3. If you are unable to draw a conclusion, return "Unsure"
+4. If the currently `available_tools` are enough to solve the query, return "Solvable"
+
+Task:
+{task}
+
+Now give your reason in "content" and `task_status` of JSON to `check_task_solvable`.
+</description>
+</function>
+
+
+
+<function>
+<name>select_better_answer</name>
+<description>
+Query:
+{query}
+
+Answer_0:
+{answer_0}
+
+Answer_1:
+{answer_1}
+
+Given above query and answers in JSON format, you must follow the rules to select the relatively better answer and give the index of the answer **(0 for Answer_0, 1 for Answer_1)**:
+1. Compare the value of "final_answer" in following aspects:
+- Informative: whether it contains all necessary information to reply to the query.
+- Factuality: whether it accurately describes what has been done, and what failed in the end.
+- Reasoning: If answer does not solve the query, whether gives a detailed and accurate reason for failure.
+2. If you cannot determine yet, compare the value of "answer_details" in following aspects:
+- Tool calling costs: calculating the percentage of failed and replicated tools calling.
+- Running costs: calculating the total tokens T used in execution.
+- Milestone: calculating the milestone(fixed subtasks) reached in execution.
+- Exploration: whether tries potential useful tools in execution. Just count times of successful tool calling with different tools/arguments in execution.
+
+If you have made your decision, calling `select_better_answer`, else if you cannot determine, select a random answer.
+</description>
+</function>

@@ -1,0 +1,28 @@
+# cheap-SOTA techniques sweep — 5 techniques × 2 benchmarks = 10 configs.
+# Mode: cartesian over fittext.variant × benchmark.name.
+#
+# Total cells = |variants| × |benchmarks| = 5 × 2 = 10.
+# Per-cell budget set in the inherited base configs (max_cost_usd: 10-20).
+# Overall expected sweep budget: ~$120-180 (under $200 per-ablation cap).
+#
+# Note: dbd technique uses fittext.variant="multi_turn" internally (alias);
+#       multishot uses fittext.variant="scattershot"; memetic routes to
+#       memetic p5_g3.
+
+inherit_from: "configs/runs/cheap_sota_memetic_toolret.yaml"
+
+sweep:
+  - field: "fittext.variant"
+    values:
+      - "just_query"     # zero-retrieval baseline
+      - "single_pass"    # one pseudo-tool description
+      - "scattershot"    # population, no selection (alias: multishot)
+      - "multi_turn"     # iterative refinement (alias: dbd)
+      - "memetic"        # full evolutionary (memetic, p5_g3)
+
+  - field: "benchmark.name"
+    values:
+      - "toolret"
+      - "stabletoolbench"
+
+mode: "cartesian"

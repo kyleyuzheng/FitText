@@ -1,0 +1,48 @@
+# Claude Sonnet 4.6 Memetic on StableToolBench G1+G2+G3.
+# Addresses cross-provider robustness (§1, §2.4).
+# NOTE: Anthropic Tier 1 rate limit is 50 RPM / 40K input TPM — tight for this workload.
+# Upgrade to Tier 2/3 or use Anthropic batch API (50% discount) before launching. (§3.2)
+# Prompt caching MUST be set via cache_control headers (§4.2, §7). Handled by modelclient track.
+#
+
+inherit:
+  - configs/_base/benchmarks.yaml
+  - configs/_base/embedder.yaml
+  - configs/_base/evaluators.yaml
+  - configs/_base/infra.yaml
+
+model:
+  pin: agents.claude_sonnet_4_6
+  revision: null
+  max_tokens: 2048
+  temperature: 1.0                # DFSDT trigger / outer loop
+  evolution_temperature: 1.5      # memetic subprocess (seed/mutation/crossover/refine) — rescue T for hard queries
+  seed: 42
+
+fittext:
+  variant: "memetic"              # uses p5_g3 memetic setting
+  population_size: 5              # p5_g3 — winning configuration
+  generations: 3
+  mutation_prob: 0.5
+  crossover_prob: 0.5
+  memory_penalty: 0.5
+  fitness_alpha: 0.7
+  jaccard_threshold: 0.3
+  selection: "fitness"
+  top_k_retrieval: 5
+
+benchmark:
+  name: "stabletoolbench"
+  splits:
+    - "G1"
+    - "G2"
+    - "G3"
+  n_queries_per_split: null
+
+budget:
+  max_cost_usd: 50.0
+
+extra:
+  note: "Frontier model run — Claude Sonnet 4.6 Memetic STB. Cross-provider robustness."
+  run_count: 2
+  caching_note: "Ensure modelclient injects cache_control on system prompt + tool catalog."

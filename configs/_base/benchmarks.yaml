@@ -1,0 +1,30 @@
+# Base benchmark configuration — ToolRet domain splits and StableToolBench G1/G2/G3.
+# Keys here merge into the top-level RunConfig under the keys they are named.
+# (No nesting — run configs inherit this and their benchmark: block overrides.)
+#
+# ToolRet: 43k tools, 4 domains. Queries from HuggingFace "mangopy/ToolRet-Queries".
+# Corpus at {WORKSPACE_ROOT}/data/retrieval/Toolret/<domain>/des_corpus.json
+#
+# StableToolBench: 16k APIs, complexity levels G1/G2/G3. Tool-simulator is
+# LLM-based (stochastic — run each cell ≥2× per §4.3).
+#
+# This file provides metadata used by the runner to locate data; the actual
+# benchmark.splits selection lives in each run YAML.
+
+_benchmarks_meta:
+  toolret:
+    corpus_root: "${WORKSPACE_ROOT:-${PWD}}/data/retrieval/Toolret"
+    hf_dataset: "mangopy/ToolRet-Queries"
+    all_splits:
+      - code
+      - customized
+      - web
+      - toolbench
+  stabletoolbench:
+    corpus_root: "${WORKSPACE_ROOT:-${PWD}}/data/retrieval/StableToolBench"
+    data_root: "${WORKSPACE_ROOT:-${PWD}}/StableToolBench/data"
+    toolbench_key: "${TOOLBENCH_KEY:-}"
+    all_splits:
+      - G1
+      - G2
+      - G3

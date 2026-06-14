@@ -1,0 +1,15 @@
+# Pinned evaluator models — judge and simulator.
+# CRITICAL: these must NEVER change when changing the agent model.
+# "Don't change the judge when you change the agent."
+#
+# The pass-rate judge and tool-simulator are LLM-based and stochastic. Pinning
+# prevents evaluation drift across ablation cells.
+#
+# Source of truth: configs/model_pins.yaml — evaluators.judge / evaluators.simulator.
+# StableToolBench tooleval configs (all three variants) already updated to match.
+
+evaluator:
+  judge_pin: evaluators.judge
+  judge_revision: "2026-03-17"                # dated tag suffix
+  simulator_pin: evaluators.simulator
+  simulator_revision: "2026-03-17"            # dated tag suffix

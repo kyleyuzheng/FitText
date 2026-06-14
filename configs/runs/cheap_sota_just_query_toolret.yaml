@@ -1,0 +1,53 @@
+#   https://developers.openai.com/api/docs/pricing
+#
+# Just-Query — zero-retrieval floor on ToolRet, cheap-SOTA model variant.
+# Single LLM call with empty tools=[]; returns empty tool_ids. Used as the
+# floor in the cost/performance Pareto plot (§2.5) — fixes a reference point
+# for what the agent's prior knowledge alone solves.
+
+inherit:
+  - configs/_base/benchmarks.yaml
+  - configs/_base/embedder.yaml
+  - configs/_base/evaluators.yaml
+  - configs/_base/infra.yaml
+
+model:
+  pin: agents.main_solver
+  revision: null
+  max_tokens: 2048
+  temperature: 0.0
+  seed: 42
+
+fittext:
+  variant: "just_query"           # zero-retrieval; LLM answers from query alone
+  population_size: 1
+  generations: 1
+  mutation_prob: 0.0
+  crossover_prob: 0.0
+  memory_penalty: 0.0
+  fitness_alpha: 0.7
+  jaccard_threshold: 0.3
+  selection: "none"
+  top_k_retrieval: 0              # zero retrieval — explicit
+
+benchmark:
+  name: "toolret"
+  splits:
+    - "code"
+    - "customized"
+    - "web"
+    - "toolbench"
+  n_queries_per_split: 50         # small-scale; dispatcher tunes
+
+budget:
+  max_cost_usd: 10.0
+
+extra:
+  technique_name: "just_query"
+  technique_role: "zero_retrieval_floor"
+  research_track: "cheap_sota"
+  cheap_sota_track: true
+  note: |
+    Zero-retrieval floor for the cheap-SOTA sweep. Paired with
+    cheap_sota_<other_variants>_toolret.yaml to fix the floor in the
+    cost/performance Pareto plot (§2.5). Pricing $0.75/$0.075/$4.50 per 1M.

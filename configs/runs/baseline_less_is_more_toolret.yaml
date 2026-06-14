@@ -1,0 +1,53 @@
+# Less-is-More baseline on ToolRet benchmark.
+# Corresponds to Paramanayakam et al. 2024.
+# Degeneracy: Single-Pass (N=1, G=1, no revision).
+#
+# Degeneracy verification: run alongside single_pass config and compare Jaccard
+# overlap on retrieved sets per query (expected >70%).
+inherit:
+  - configs/_base/benchmarks.yaml
+  - configs/_base/embedder.yaml
+  - configs/_base/evaluators.yaml
+  - configs/_base/infra.yaml
+
+model:
+  pin: agents.legacy_baseline
+  revision: null
+  max_tokens: 256
+  temperature: 0.0
+  seed: 42
+
+# FitText variant field is required by RunConfig schema; set to single_pass
+# to signal the degeneracy relationship. Actual dispatch goes through
+# scripts/run_baseline.py --baseline less_is_more.
+fittext:
+  variant: "single_pass"
+  population_size: 1
+  generations: 1
+  mutation_prob: 0.0
+  crossover_prob: 0.0
+  memory_penalty: 0.0
+  fitness_alpha: 0.7
+  jaccard_threshold: 0.3
+  selection: "none"
+  top_k_retrieval: 5
+
+benchmark:
+  name: "toolret"
+  splits:
+    - "code"
+    - "customized"
+    - "web"
+    - "toolbench"
+  n_queries_per_split: null
+
+budget:
+  max_cost_usd: 20.0
+
+extra:
+  baseline_name: "less_is_more"
+  paper: "Paramanayakam et al. 2024"
+  degeneracy: "single_pass"
+  note: "Single LLM call; fuzzy catalog match; retriever fallback."
+  fuzzy_threshold: 2
+  include_tool_names_in_prompt: true

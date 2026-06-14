@@ -1,0 +1,59 @@
+# Cheap-SOTA dispatch spec.
+#
+# Fans out: 5 techniques × 4 baselines × 2 benchmarks × 1 model, capped at
+# 50 queries per split. Designed for fast feedback on a cheap model.
+# Model IDs resolve through configs/model_pins.yaml.
+#
+# Total cells (with 4 ToolRet splits + 2 STB splits = 6 splits):
+#   (5 techniques + 4 baselines) × 6 splits × 1 model = 54 cells
+#
+# Usage:
+#   python scripts/dispatch_benchmarks.py \
+#       --spec configs/dispatch/cheap_sota_small.yaml \
+#       --out  "${FITTEXT_RUNTIME_ROOT:-runs}/$JOB_ID/dispatch"
+#
+#   # Add a remote host to the worker pool:
+#   python scripts/dispatch_benchmarks.py \
+#       --spec configs/dispatch/cheap_sota_small.yaml \
+#       --out  "${FITTEXT_RUNTIME_ROOT:-runs}/$JOB_ID/dispatch" \
+#       --hosts <hostname>
+#
+# Resume is on by default — re-running with the same --out skips cells whose
+# result.json already exists.
+
+name: cheap_sota_small
+description: "5 techniques × 4 baselines × 2 benchmarks × 1 model, 50 queries each split"
+
+models:
+  - pin: agents.cheap_sota
+
+techniques:
+  - just_query        # zero-retrieval lower bound
+  - single_pass       # FitText vanilla
+  - multishot         # → variant=scattershot
+  - dbd               # → variant=memetic (no memory)
+  - memetic           # → memetic p5_g3
+
+baselines:
+  - less_is_more
+  - reinvoke
+  - xu2024
+  - colt
+
+benchmarks:
+  - name: toolret
+    splits: [code, customized, web, toolbench]
+    n_queries_per_split: 50
+  - name: stabletoolbench
+    splits: [G2, G3]
+    n_queries_per_split: 50
+
+parallelism:
+  max_local_workers: 6
+  hosts: []                    # populate via --hosts CLI flag
+  shard_split: by_cell
+  resume: true
+
+budget:
+  per_cell_usd: 5.0            # max_cost_usd injected into each cell
+  total_usd:    100.0          # global ceiling — dispatcher aborts further launches

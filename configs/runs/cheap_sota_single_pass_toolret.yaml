@@ -1,0 +1,43 @@
+#   https://developers.openai.com/api/docs/pricing
+# cheap-SOTA agent for small-scale sweep — single_pass technique on ToolRet.
+
+inherit:
+  - configs/_base/benchmarks.yaml
+  - configs/_base/embedder.yaml
+  - configs/_base/evaluators.yaml
+  - configs/_base/infra.yaml
+
+model:
+  pin: agents.main_solver
+  revision: null
+  max_tokens: 2048
+  temperature: 0.0
+  seed: 42
+
+fittext:
+  variant: "single_pass"          # one pseudo-tool description per query
+  population_size: 1
+  generations: 1
+  mutation_prob: 0.0
+  crossover_prob: 0.0
+  memory_penalty: 0.0
+  fitness_alpha: 0.7
+  jaccard_threshold: 0.3
+  selection: "none"
+  top_k_retrieval: 5
+
+benchmark:
+  name: "toolret"
+  splits:
+    - "code"
+    - "customized"
+    - "web"
+    - "toolbench"
+  n_queries_per_split: 50
+
+budget:
+  max_cost_usd: 15.0
+
+extra:
+  note: "cheap-SOTA single_pass on ToolRet. Pricing $0.75/$0.075/$4.50 per 1M."
+  cheap_sota_track: true

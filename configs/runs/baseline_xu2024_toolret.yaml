@@ -1,0 +1,51 @@
+# Xu et al. 2024 baseline on ToolRet benchmark.
+# Corresponds to arXiv 2406.17465.
+# Iterative feedback loop: retrieve -> critique -> reformulate -> repeat.
+#
+# Degeneracy: Multi-Turn degenerate case + explicit critic prompt.
+# Degeneracy verification: run alongside multi_turn config and check
+# NDCG(xu2024) vs NDCG(multi_turn) within ±2 pp.
+inherit:
+  - configs/_base/benchmarks.yaml
+  - configs/_base/embedder.yaml
+  - configs/_base/evaluators.yaml
+  - configs/_base/infra.yaml
+
+model:
+  pin: agents.legacy_baseline
+  revision: null
+  max_tokens: 256
+  temperature: 0.0
+  seed: 42
+
+fittext:
+  variant: "multi_turn"    # signals degeneracy relationship; schema requires a valid variant
+  population_size: 1
+  generations: 3           # matches max_iterations below
+  mutation_prob: 0.0
+  crossover_prob: 0.0
+  memory_penalty: 0.0
+  fitness_alpha: 0.7
+  jaccard_threshold: 0.3
+  selection: "fitness"
+  top_k_retrieval: 5
+
+benchmark:
+  name: "toolret"
+  splits:
+    - "code"
+    - "customized"
+    - "web"
+    - "toolbench"
+  n_queries_per_split: null
+
+budget:
+  max_cost_usd: 30.0   # 2 LLM calls per iteration × 3 iterations × n_queries
+
+extra:
+  baseline_name: "xu2024"
+  paper: "Xu et al. arXiv 2406.17465"
+  degeneracy: "multi_turn"
+  # Xu2024Baseline specific hparams
+  max_iterations: 3     # G — feedback-loop iterations before returning
+  note: "Iterative critique+reformulate loop; belief trace stored in metadata."

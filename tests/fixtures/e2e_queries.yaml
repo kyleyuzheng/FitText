@@ -1,0 +1,33 @@
+# Seed queries for the E2E pipeline integration test.
+#
+# Three queries spanning the easy / ambiguous / hard spectrum so the
+# downstream hard-question-extractor (separate task) has a known mix to
+# discriminate against. These IDs do NOT have to come from a real benchmark
+# split — they are synthetic and only used by the E2E test.
+#
+# Each entry contains:
+#   qid          : stable identifier referenced in manifest / result.json
+#   difficulty   : one of {easy, ambiguous, hard}
+#   query        : the natural-language user query
+#   gold_tool_id : the expected category::tool_name::api_name composite id
+#                  (or null if unknown / not applicable)
+#   notes        : human-readable rationale for the difficulty label
+
+seed_queries:
+  - qid: "e2e:easy:001"
+    difficulty: "easy"
+    query: "What is the current weather in San Francisco?"
+    gold_tool_id: "Weather::OpenWeather::get_current_weather"
+    notes: "Direct catalog hit — single obvious tool, no ambiguity."
+
+  - qid: "e2e:ambiguous:002"
+    difficulty: "ambiguous"
+    query: "Get me the latest data about AAPL stock."
+    gold_tool_id: "Finance::StockData::get_quote"
+    notes: "Multiple candidate tools (StockData, MarketAPI, Finnhub) could plausibly answer."
+
+  - qid: "e2e:hard:003"
+    difficulty: "hard"
+    query: "Plan a 3-day Tokyo trip with vegetarian-friendly restaurants and museums near the hotel."
+    gold_tool_id: null
+    notes: "Multi-hop compositional query — needs map, restaurant, museum, hotel tools chained."

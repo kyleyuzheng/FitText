@@ -1,0 +1,50 @@
+# Just-Query — zero-retrieval floor baseline on StableToolBench (G1+G2+G3).
+#
+# Zero-retrieval floor: the "everything off" comparator. One LLM call per
+# query — no retrieval, no tool catalog, no critic. The pass-rate judge
+# scores the direct answer; the empty tool_ids list is the technique's
+# whole point.
+
+inherit:
+  - configs/_base/benchmarks.yaml
+  - configs/_base/embedder.yaml
+  - configs/_base/evaluators.yaml
+  - configs/_base/infra.yaml
+
+model:
+  pin: agents.legacy_baseline
+  revision: null
+  max_tokens: 2048
+  temperature: 0.0
+  seed: 42
+
+fittext:
+  variant: "just_query"
+  population_size: 1
+  generations: 1
+  mutation_prob: 0.0
+  crossover_prob: 0.0
+  memory_penalty: 0.0
+  fitness_alpha: 0.7
+  jaccard_threshold: 0.3
+  selection: "none"
+  top_k_retrieval: 0
+
+benchmark:
+  name: "stabletoolbench"
+  splits:
+    - "G1"
+    - "G2"
+    - "G3"
+  n_queries_per_split: null
+
+budget:
+  max_cost_usd: 10.0
+
+extra:
+  technique_name: "just_query"
+  technique_role: "zero_retrieval_floor"
+  note: |
+    Zero-retrieval floor on STB G1+G2+G3. Bounds the value of every
+    retrieval technique evaluated above it. answer field is judged by
+    the pinned STB pass-rate judge.

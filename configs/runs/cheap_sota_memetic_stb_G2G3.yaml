@@ -1,0 +1,43 @@
+#   https://developers.openai.com/api/docs/pricing
+# cheap-SOTA agent for the small-scale sweep — memetic on STB G2+G3.
+# variant: memetic uses p5_g3 memetic setting — winning variant.
+
+inherit:
+  - configs/_base/benchmarks.yaml
+  - configs/_base/embedder.yaml
+  - configs/_base/evaluators.yaml
+  - configs/_base/infra.yaml
+
+model:
+  pin: agents.main_solver
+  revision: null
+  max_tokens: 2048
+  temperature: 1.0                # DFSDT trigger / outer loop
+  evolution_temperature: 1.5      # memetic subprocess (seed/mutation/crossover/refine) — rescue T for hard queries
+  seed: 42
+
+fittext:
+  variant: "memetic"              # uses p5_g3 memetic setting
+  population_size: 5              # p5_g3 — winning configuration
+  generations: 3
+  mutation_prob: 0.5
+  crossover_prob: 0.5
+  memory_penalty: 0.5
+  fitness_alpha: 0.7
+  jaccard_threshold: 0.3
+  selection: "fitness"
+  top_k_retrieval: 5
+
+benchmark:
+  name: "stabletoolbench"
+  splits:
+    - "G2"
+    - "G3"
+  n_queries_per_split: 50
+
+budget:
+  max_cost_usd: 20.0
+
+extra:
+  note: "cheap-SOTA memetic p5_g3 setting on STB G2+G3."
+  cheap_sota_track: true

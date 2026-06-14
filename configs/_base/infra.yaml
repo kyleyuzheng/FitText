@@ -1,0 +1,12 @@
+# Base infrastructure configuration.
+# Paths use env-var substitution — no hardcoded filesystem locations.
+# Write per-step trajectories under the env-selected runtime root, then rsync at end.
+# ${VAR:-default} syntax is supported by the resolver.
+
+infra:
+  cache_dir: "${FITTEXT_RUNTIME_ROOT:-runs}/${JOB_ID:-fittext_local}/cache"
+  output_dir: "${FITTEXT_RUNTIME_ROOT:-runs}/${JOB_ID:-fittext_local}/results"
+  rsync_to: "${FITTEXT_RSYNC_TO:-}"
+  shard: 0
+  total_shards: 1
+  host: "${HOSTNAME:-unknown}"

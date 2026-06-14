@@ -1,0 +1,15 @@
+# Virtual API Server Configuration
+# Env-var templates (${...}) are expanded by main.py at load time.
+api_key: ${OPENAI_API_KEY}
+api_base:
+# Simulator model. run_server.sh sets STB_SIMULATOR_MODEL from configs/model_pins.yaml.
+model: ${STB_SIMULATOR_MODEL}
+temperature: 0
+# Optional upstream ToolBench proxy. If unset or unreachable, the server falls
+# back to the LLM-simulated `fake_response_function_chat` path.
+toolbench_url: ${TOOLBENCH_URL}
+tools_folder: ${TOOL_ROOT_DIR}
+cache_folder: ${FITTEXT_RUNTIME_ROOT}/stb_server/tool_response_cache
+is_save: true
+port: 8080
+log_file: ${FITTEXT_RUNTIME_ROOT}/stb_server/server.log
